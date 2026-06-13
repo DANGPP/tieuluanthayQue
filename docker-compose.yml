@@ -1,0 +1,229 @@
+﻿x-django-build: &django-build
+  context: .
+  dockerfile: Dockerfile
+
+x-common-env: &common-env
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: postgres_password
+  DB_HOST: postgres
+  DB_PORT: 5432
+
+x-postgres-depends: &postgres-depends
+  postgres:
+    condition: service_healthy
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: tieuluan_postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db-init/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    restart: unless-stopped
+
+  user-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/user-service
+    container_name: tieuluan_user_service
+    environment:
+      <<: *common-env
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8001 --noreload"
+    ports:
+      - "8001:8001"
+    depends_on:
+      <<: *postgres-depends
+    restart: unless-stopped
+
+  product-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/product-service
+    container_name: tieuluan_product_service
+    environment:
+      <<: *common-env
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8002 --noreload"
+    ports:
+      - "8002:8002"
+    depends_on:
+      <<: *postgres-depends
+    restart: unless-stopped
+
+  cart-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/cart-service
+    container_name: tieuluan_cart_service
+    environment:
+      <<: *common-env
+      PRODUCT_SERVICE_URL: http://product-service:8002/api/products
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8003 --noreload"
+    ports:
+      - "8003:8003"
+    depends_on:
+      <<: *postgres-depends
+      product-service:
+        condition: service_started
+    restart: unless-stopped
+
+  order-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/order-service
+    container_name: tieuluan_order_service
+    environment:
+      <<: *common-env
+      USER_SERVICE_URL: http://user-service:8001/api/users
+      PRODUCT_SERVICE_URL: http://product-service:8002/api/products
+      CART_SERVICE_URL: http://cart-service:8003/api/cart
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8004 --noreload"
+    ports:
+      - "8004:8004"
+    depends_on:
+      <<: *postgres-depends
+      user-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+      cart-service:
+        condition: service_started
+    restart: unless-stopped
+
+  payment-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/payment-service
+    container_name: tieuluan_payment_service
+    environment:
+      <<: *common-env
+      ORDER_SERVICE_URL: http://order-service:8004/api/orders
+      SHIPPING_SERVICE_URL: http://shipping-service:8006/api/shipments
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8005 --noreload"
+    ports:
+      - "8005:8005"
+    depends_on:
+      <<: *postgres-depends
+      order-service:
+        condition: service_started
+      shipping-service:
+        condition: service_started
+    restart: unless-stopped
+
+  shipping-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/shipping-service
+    container_name: tieuluan_shipping_service
+    environment:
+      <<: *common-env
+      ORDER_SERVICE_URL: http://order-service:8004/api/orders
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8006 --noreload"
+    ports:
+      - "8006:8006"
+    depends_on:
+      <<: *postgres-depends
+      order-service:
+        condition: service_started
+    restart: unless-stopped
+
+  ai-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/ai-service
+    container_name: tieuluan_ai_service
+    environment:
+      <<: *common-env
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8007 --noreload"
+    ports:
+      - "8007:8007"
+    depends_on:
+      <<: *postgres-depends
+    restart: unless-stopped
+
+  gateway-service:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/gateway-service
+    container_name: tieuluan_gateway_service
+    environment:
+      <<: *common-env
+      USER_API_URL: http://user-service:8001/api
+      PRODUCT_API_URL: http://product-service:8002/api
+      CART_API_URL: http://cart-service:8003/api
+      ORDER_API_URL: http://order-service:8004/api
+      PAYMENT_API_URL: http://payment-service:8005/api
+      SHIPPING_API_URL: http://shipping-service:8006/api
+      AI_API_URL: http://ai-service:8007/api
+      USER_HEALTH_URL: http://user-service:8001/admin/
+      PRODUCT_HEALTH_URL: http://product-service:8002/admin/
+      CART_HEALTH_URL: http://cart-service:8003/admin/
+      ORDER_HEALTH_URL: http://order-service:8004/admin/
+      PAYMENT_HEALTH_URL: http://payment-service:8005/admin/
+      SHIPPING_HEALTH_URL: http://shipping-service:8006/admin/
+      AI_HEALTH_URL: http://ai-service:8007/admin/
+      GATEWAY_HEALTH_URL: http://gateway-service:8008/admin/
+    command: sh -c "python manage.py migrate --noinput && python manage.py runserver 0.0.0.0:8008 --noreload"
+    ports:
+      - "8008:8008"
+    depends_on:
+      <<: *postgres-depends
+      user-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+      cart-service:
+        condition: service_started
+      order-service:
+        condition: service_started
+      payment-service:
+        condition: service_started
+      shipping-service:
+        condition: service_started
+      ai-service:
+        condition: service_started
+    restart: unless-stopped
+
+  seed-data:
+    build:
+      <<: *django-build
+      args:
+        SERVICE_DIR: services/gateway-service
+    container_name: tieuluan_seed_data
+    profiles:
+      - tools
+    environment:
+      <<: *common-env
+      WORKSPACE: /app
+    working_dir: /app
+    command: sh -c "python seed_data.py"
+    depends_on:
+      <<: *postgres-depends
+      user-service:
+        condition: service_started
+      product-service:
+        condition: service_started
+      gateway-service:
+        condition: service_started
+    restart: "no"
+
+volumes:
+  postgres_data:
+

@@ -1,0 +1,10 @@
+.venv/
+logs/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.sqlite3
+.git/
+.idea/
+.vscode/
+postgres_data/

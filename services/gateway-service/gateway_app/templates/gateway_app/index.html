@@ -1,0 +1,1102 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>E-Commerce Microservices</title>
+  <style>
+    :root {
+      --bg: #f7f8fb;
+      --surface: #ffffff;
+      --line: #dde3ec;
+      --text: #172033;
+      --muted: #627088;
+      --blue: #2563eb;
+      --green: #15803d;
+      --red: #b42318;
+      --amber: #b45309;
+      --cyan: #0e7490;
+      --shadow: 0 10px 24px rgba(23, 32, 51, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+
+    button, input, select {
+      font: inherit;
+    }
+
+    button {
+      min-height: 36px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      padding: 8px 12px;
+      transition: border-color .15s ease, background .15s ease, transform .15s ease;
+      white-space: nowrap;
+    }
+
+    button:hover { border-color: var(--blue); }
+    button:active { transform: translateY(1px); }
+    button.primary {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: white;
+    }
+    button.success {
+      background: var(--green);
+      border-color: var(--green);
+      color: white;
+    }
+    button.danger {
+      background: #fff7f6;
+      border-color: #f0b8b0;
+      color: var(--red);
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: .55;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 8px 10px;
+      background: white;
+      color: var(--text);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .shell {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+
+    .sidebar {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      border-right: 1px solid var(--line);
+      background: var(--surface);
+      padding: 20px;
+      overflow: auto;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 22px;
+    }
+
+    .brand-mark {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      border-radius: 8px;
+      background: #e8f0ff;
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .brand h1 {
+      margin: 0;
+      font-size: 17px;
+      line-height: 1.2;
+      letter-spacing: 0;
+    }
+
+    .brand p, .muted {
+      margin: 0;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .nav {
+      display: grid;
+      gap: 8px;
+      margin: 20px 0;
+    }
+
+    .nav a {
+      color: var(--text);
+      text-decoration: none;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      padding: 8px 10px;
+    }
+
+    .nav a:hover {
+      border-color: var(--line);
+      background: #f8fafc;
+    }
+
+    .service-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .service-pill {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfe;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--red);
+      margin-right: 6px;
+    }
+
+    .status-dot.on { background: var(--green); }
+
+    .main {
+      padding: 24px;
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 16px;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 24px;
+      letter-spacing: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(320px, .65fr);
+      gap: 18px;
+      align-items: start;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+      padding: 16px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+
+    .panel h3 {
+      margin: 0;
+      font-size: 16px;
+      letter-spacing: 0;
+    }
+
+    .toolbar {
+      display: grid;
+      grid-template-columns: 1fr 160px;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .products {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+    }
+
+    .product-card {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 12px;
+      background: white;
+      display: grid;
+      gap: 10px;
+      min-height: 220px;
+    }
+
+    .product-media {
+      height: 76px;
+      border-radius: 6px;
+      background:
+        linear-gradient(135deg, rgba(37, 99, 235, .12), rgba(21, 128, 61, .10)),
+        repeating-linear-gradient(45deg, #ffffff, #ffffff 8px, #f1f5f9 8px, #f1f5f9 16px);
+      display: flex;
+      align-items: end;
+      padding: 10px;
+      color: var(--blue);
+      font-weight: 800;
+    }
+
+    .product-title {
+      min-height: 40px;
+      font-weight: 700;
+    }
+
+    .product-meta {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .price {
+      color: var(--green);
+      font-weight: 800;
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 88px;
+      gap: 8px;
+      align-items: end;
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      align-items: end;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .table th, .table td {
+      border-bottom: 1px solid var(--line);
+      padding: 9px 6px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .table th {
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    .qty-cell {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+
+    .qty-cell button {
+      width: 34px;
+      padding: 0;
+    }
+
+    .summary {
+      display: grid;
+      gap: 8px;
+      border-top: 1px solid var(--line);
+      padding-top: 12px;
+    }
+
+    .summary-line {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 2px 8px;
+      color: var(--muted);
+      background: #fbfcfe;
+      font-size: 12px;
+    }
+
+    .badge.ok { color: var(--green); border-color: #b9e2c6; background: #f0fff4; }
+    .badge.warn { color: var(--amber); border-color: #f3d19b; background: #fff8eb; }
+    .badge.info { color: var(--cyan); border-color: #a9dbe7; background: #effcff; }
+
+    .log {
+      min-height: 70px;
+      max-height: 180px;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      background: #fbfcfe;
+      padding: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .empty {
+      color: var(--muted);
+      border: 1px dashed var(--line);
+      border-radius: 6px;
+      padding: 14px;
+      background: #fbfcfe;
+    }
+
+    @media (max-width: 980px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar {
+        position: static;
+        height: auto;
+        border-right: 0;
+        border-bottom: 1px solid var(--line);
+      }
+      .grid { grid-template-columns: 1fr; }
+      .toolbar, .form-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">EC</div>
+        <div>
+          <h1>E-Commerce</h1>
+          <p>Microservices UI</p>
+        </div>
+      </div>
+
+      <nav class="nav">
+        <a href="#products">San pham</a>
+        <a href="#cart">Gio hang</a>
+        <a href="#checkout">Thanh toan</a>
+        <a href="#history">Du lieu</a>
+      </nav>
+
+      <div class="panel-head">
+        <h3>Services</h3>
+        <button id="refreshStatusBtn" title="Tai lai trang thai">Refresh</button>
+      </div>
+      <div id="serviceList" class="service-list"></div>
+    </aside>
+
+    <main class="main">
+      <section class="topbar">
+        <div>
+          <h2>Shop Console</h2>
+          <p class="muted" id="sessionLabel">Chua dang nhap</p>
+        </div>
+        <div class="actions">
+          <button id="reloadBtn">Tai lai</button>
+          <button id="clearCartBtn" class="danger">Xoa gio</button>
+        </div>
+      </section>
+
+      <section class="panel" id="login">
+        <div class="panel-head">
+          <h3>Dang nhap</h3>
+          <span class="badge info" id="loginBadge">Local demo</span>
+        </div>
+        <div class="form-grid">
+          <div>
+            <label for="usernameInput">Username</label>
+            <input id="usernameInput" value="customer1" autocomplete="username">
+          </div>
+          <div>
+            <label for="passwordInput">Password</label>
+            <input id="passwordInput" type="password" value="password123" autocomplete="current-password">
+          </div>
+          <button id="loginBtn" class="primary">Dang nhap</button>
+          <button id="loadAddressesBtn">Lay dia chi</button>
+        </div>
+      </section>
+
+      <div class="grid">
+        <section class="panel" id="products">
+          <div class="panel-head">
+            <h3>Danh muc san pham</h3>
+            <span class="badge" id="productCount">0 san pham</span>
+          </div>
+          <div class="toolbar">
+            <input id="searchInput" placeholder="Tim theo ten hoac mo ta">
+            <button id="searchBtn">Tim</button>
+          </div>
+          <div id="productList" class="products"></div>
+        </section>
+
+        <aside class="stack">
+          <section class="panel" id="cart">
+            <div class="panel-head">
+              <h3>Gio hang</h3>
+              <span class="badge" id="cartBadge">0 mat hang</span>
+            </div>
+            <div id="cartTable"></div>
+            <div class="summary">
+              <div class="summary-line">
+                <span>Tong tien</span>
+                <strong id="cartTotal">0 VND</strong>
+              </div>
+              <button id="previewBtn" class="primary">Cap nhat checkout</button>
+            </div>
+          </section>
+
+          <section class="panel" id="checkout">
+            <div class="panel-head">
+              <h3>Checkout</h3>
+              <span class="badge warn" id="orderBadge">Chua co don</span>
+            </div>
+            <div class="stack">
+              <div>
+                <label for="addressSelect">Dia chi giao hang</label>
+                <select id="addressSelect"></select>
+              </div>
+              <button id="createOrderBtn" class="primary">Tao don hang</button>
+              <button id="payBtn" class="success" disabled>Tao thanh toan</button>
+              <button id="confirmPayBtn" disabled>Xac nhan payment</button>
+              <button id="deliverBtn" disabled>Danh dau da giao</button>
+            </div>
+          </section>
+        </aside>
+      </div>
+
+      <section class="grid" id="history">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Don hang hien tai</h3>
+            <span class="badge info" id="shipmentBadge">Shipment</span>
+          </div>
+          <div id="orderDetail" class="empty">Chua co don hang trong phien nay.</div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>AI va Customer</h3>
+            <button id="refreshDataBtn">Tai du lieu</button>
+          </div>
+          <div class="log" id="dataLog"></div>
+        </div>
+      </section>
+
+      <section class="panel" id="roleOps">
+        <div class="panel-head">
+          <h3>Role Operations</h3>
+          <span class="badge info" id="roleBadge">customer</span>
+        </div>
+        <div class="actions">
+          <button onclick="quickLogin('customer1')">Customer</button>
+          <button onclick="quickLogin('admin1')">Admin</button>
+          <button onclick="quickLogin('staff1')">Staff</button>
+          <button onclick="quickLogin('shipper1')">Shipper</button>
+          <button id="loadRoleOpsBtn" class="primary">Tai dashboard role</button>
+        </div>
+        <div id="roleOpsContent" class="stack" style="margin-top: 12px;"></div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    const state = {
+      user: null,
+      products: [],
+      cart: null,
+      addresses: [],
+      order: null,
+      payment: null,
+      shipment: null,
+    };
+
+    const $ = (id) => document.getElementById(id);
+    const money = (value) => `${Number(value || 0).toLocaleString('vi-VN')} VND`;
+    const productInitial = (name) => (name || 'SP').split(/\s+/).slice(0, 2).map((word) => word[0]).join('').toUpperCase();
+
+    function log(message) {
+      const line = document.createElement('div');
+      line.textContent = `[${new Date().toLocaleTimeString('vi-VN')}] ${message}`;
+      $('dataLog').prepend(line);
+    }
+
+    async function api(path, options = {}) {
+      const response = await fetch(path, {
+        headers: { 'Content-Type': 'application/json' },
+        ...options,
+      });
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(data.error || data.detail || `HTTP ${response.status}`);
+      }
+      return data;
+    }
+
+    function requireUser() {
+      if (!state.user) {
+        throw new Error('Can dang nhap truoc.');
+      }
+      return state.user.id;
+    }
+
+    async function loadStatus() {
+      const data = await api('/ui/api/status');
+      $('serviceList').innerHTML = data.services.map((svc) => `
+        <div class="service-pill">
+          <span><span class="status-dot ${svc.online ? 'on' : ''}"></span>${svc.name}</span>
+          <span>${svc.online ? 'online' : 'offline'}</span>
+        </div>
+      `).join('');
+    }
+
+    async function login() {
+      const data = await api('/ui/api/login', {
+        method: 'POST',
+        body: JSON.stringify({
+          username: $('usernameInput').value,
+          password: $('passwordInput').value,
+        }),
+      });
+      state.user = data.user;
+      $('sessionLabel').textContent = `${state.user.username} | user_id ${state.user.id}`;
+      $('loginBadge').textContent = 'Da dang nhap';
+      $('loginBadge').className = 'badge ok';
+      $('roleBadge').textContent = state.user.role;
+      log(`Dang nhap thanh cong: ${state.user.username}`);
+      await Promise.all([loadAddresses(), loadCart(), loadCustomerData(), loadRoleOps()]);
+    }
+
+    async function loadProducts() {
+      const query = $('searchInput').value.trim();
+      const data = await api(`/ui/api/products${query ? `?search=${encodeURIComponent(query)}` : ''}`);
+      state.products = data;
+      $('productCount').textContent = `${data.length} san pham`;
+      $('productList').innerHTML = data.length ? data.map((product) => `
+        <article class="product-card">
+          <div class="product-media">${productInitial(product.name)}</div>
+          <div class="product-title">${product.name}</div>
+          <div class="product-meta">
+            <span>${product.category_name || 'Chua phan loai'}</span>
+            <span>Ton: ${product.stock}</span>
+          </div>
+          <div class="price">${money(product.price)}</div>
+          <div class="row">
+            <input id="qty-${product.id}" type="number" min="1" max="${product.stock}" value="1">
+            <button class="primary" onclick="addToCart(${product.id})">Them</button>
+          </div>
+        </article>
+      `).join('') : '<div class="empty">Khong co san pham phu hop.</div>';
+    }
+
+    async function loadAddresses() {
+      const userId = requireUser();
+      const data = await api(`/ui/api/addresses?user_id=${userId}`);
+      state.addresses = data;
+      $('addressSelect').innerHTML = data.map((address) => `
+        <option value="${address.id}">${address.full_name} - ${address.address_line}</option>
+      `).join('');
+      log(`Da tai ${data.length} dia chi.`);
+    }
+
+    async function addToCart(productId) {
+      try {
+        const userId = requireUser();
+        const quantity = Number($(`qty-${productId}`).value || 1);
+        await api('/ui/api/cart/items', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId, product_id: productId, quantity }),
+        });
+        log(`Da them san pham ${productId} vao gio.`);
+        await loadCart();
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function loadCart() {
+      if (!state.user) {
+        renderCart();
+        return;
+      }
+      state.cart = await api(`/ui/api/cart?user_id=${state.user.id}`);
+      renderCart();
+    }
+
+    function renderCart() {
+      const items = state.cart?.items || [];
+      $('cartBadge').textContent = `${items.length} mat hang`;
+      $('cartTotal').textContent = money(state.cart?.total_price || 0);
+      if (!items.length) {
+        $('cartTable').innerHTML = '<div class="empty">Gio hang dang trong.</div>';
+        return;
+      }
+      $('cartTable').innerHTML = `
+        <table class="table">
+          <thead><tr><th>San pham</th><th>SL</th><th>Tam tinh</th></tr></thead>
+          <tbody>
+            ${items.map((item) => `
+              <tr>
+                <td>${item.product_name}</td>
+                <td>
+                  <div class="qty-cell">
+                    <button onclick="updateQty(${item.product_id}, ${item.quantity - 1})">-</button>
+                    <span>${item.quantity}</span>
+                    <button onclick="updateQty(${item.product_id}, ${item.quantity + 1})">+</button>
+                  </div>
+                </td>
+                <td>${money(item.subtotal)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      `;
+    }
+
+    async function updateQty(productId, quantity) {
+      const userId = requireUser();
+      await api(`/ui/api/cart/items/${productId}?user_id=${userId}`, {
+        method: quantity <= 0 ? 'DELETE' : 'PUT',
+        body: quantity <= 0 ? undefined : JSON.stringify({ user_id: userId, quantity }),
+      });
+      await loadCart();
+    }
+
+    async function clearCart() {
+      if (!state.user) return;
+      await api(`/ui/api/cart?user_id=${state.user.id}`, { method: 'DELETE' });
+      state.cart = { items: [], total_price: 0 };
+      renderCart();
+      log('Da xoa gio hang.');
+    }
+
+    async function previewCheckout() {
+      const userId = requireUser();
+      state.cart = await api(`/ui/api/cart/checkout-preview?user_id=${userId}`);
+      renderCart();
+      log(`Checkout preview: ${money(state.cart.total_price)}.`);
+    }
+
+    async function createOrder() {
+      try {
+        const userId = requireUser();
+        const addressId = Number($('addressSelect').value);
+        const order = await api('/ui/api/orders', {
+          method: 'POST',
+          body: JSON.stringify({ user_id: userId, address_id: addressId }),
+        });
+        state.order = order;
+        state.payment = null;
+        state.shipment = null;
+        $('payBtn').disabled = false;
+        $('confirmPayBtn').disabled = true;
+        $('deliverBtn').disabled = true;
+        $('orderBadge').textContent = order.status;
+        $('orderBadge').className = 'badge warn';
+        renderOrder();
+        await loadCart();
+        await loadProducts();
+        log(`Da tao order #${order.id}.`);
+      } catch (error) {
+        alert(error.message);
+      }
+    }
+
+    async function createPayment() {
+      const payment = await api('/ui/api/payments', {
+        method: 'POST',
+        body: JSON.stringify({
+          order_id: state.order.id,
+          amount: state.order.total_price,
+          method: 'card',
+        }),
+      });
+      state.payment = payment;
+      $('confirmPayBtn').disabled = false;
+      log(`Da tao payment #${payment.id}.`);
+      renderOrder();
+    }
+
+    async function confirmPayment() {
+      const payment = await api(`/ui/api/payments/${state.payment.id}/confirm`, {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: state.user.id,
+          transaction_id: `UI_TXN_${state.payment.id}_${Date.now()}`,
+          status: 'success',
+        }),
+      });
+      state.payment = payment;
+      await refreshOrder();
+      await loadShipment();
+      await api('/ui/api/behaviors', {
+        method: 'POST',
+        body: JSON.stringify({
+          user_id: state.user.id,
+          product_id: state.order.items[0]?.product_id,
+          action_type: 'purchase',
+        }),
+      }).catch(() => null);
+      $('deliverBtn').disabled = !state.shipment;
+      log(`Payment #${payment.id} da xac nhan.`);
+    }
+
+    async function refreshOrder() {
+      if (!state.order || !state.user) return;
+      state.order = await api(`/ui/api/orders/${state.order.id}?user_id=${state.user.id}`);
+      $('orderBadge').textContent = state.order.status;
+      $('orderBadge').className = state.order.status === 'completed' ? 'badge ok' : 'badge warn';
+      renderOrder();
+    }
+
+    async function loadShipment() {
+      if (!state.order) return;
+      state.shipment = await api(`/ui/api/shipments/order/${state.order.id}`);
+      $('shipmentBadge').textContent = state.shipment.status;
+      $('shipmentBadge').className = 'badge info';
+      renderOrder();
+    }
+
+    async function markDelivered() {
+      state.shipment = await api(`/ui/api/shipments/${state.shipment.id}`, {
+        method: 'PUT',
+        body: JSON.stringify({ status: 'delivered' }),
+      });
+      await refreshOrder();
+      $('shipmentBadge').textContent = state.shipment.status;
+      $('shipmentBadge').className = 'badge ok';
+      log(`Shipment #${state.shipment.id} da giao.`);
+    }
+
+    function renderOrder() {
+      if (!state.order) return;
+      const items = state.order.items || [];
+      $('orderDetail').className = '';
+      $('orderDetail').innerHTML = `
+        <div class="stack">
+          <div class="summary-line"><span>Order</span><strong>#${state.order.id}</strong></div>
+          <div class="summary-line"><span>Trang thai</span><span class="badge">${state.order.status}</span></div>
+          <div class="summary-line"><span>Tong tien</span><strong>${money(state.order.total_price)}</strong></div>
+          <div class="summary-line"><span>Payment</span><span>${state.payment ? `#${state.payment.id} - ${state.payment.status}` : 'Chua tao'}</span></div>
+          <div class="summary-line"><span>Shipment</span><span>${state.shipment ? `${state.shipment.tracking_number} - ${state.shipment.status}` : 'Chua tao'}</span></div>
+          <table class="table">
+            <thead><tr><th>Product ID</th><th>SL</th><th>Gia</th></tr></thead>
+            <tbody>${items.map((item) => `<tr><td>${item.product_id}</td><td>${item.quantity}</td><td>${money(item.price)}</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    async function loadCustomerData() {
+      const customers = await api('/api/gateway/customers');
+      const behaviors = state.user ? await api(`/ui/api/behaviors?user_id=${state.user.id}`) : [];
+      $('dataLog').innerHTML = '';
+      log(`Gateway customers: ${customers.map((c) => c.full_name).join(', ') || 'none'}`);
+      if (state.user) {
+        log(`AI behaviors cua user ${state.user.id}: ${behaviors.length}`);
+      }
+    }
+
+    function actorQuery() {
+      if (!state.user) return '';
+      return `user_id=${state.user.id}&role=${state.user.role}`;
+    }
+
+    async function quickLogin(username) {
+      $('usernameInput').value = username;
+      $('passwordInput').value = 'password123';
+      await login();
+      await loadRoleOps();
+    }
+
+    async function loadRoleOps() {
+      if (!state.user) {
+        $('roleOpsContent').innerHTML = '<div class="empty">Dang nhap de xem dashboard theo role.</div>';
+        return;
+      }
+      $('roleBadge').textContent = state.user.role;
+      if (state.user.role === 'admin') return loadAdminOps();
+      if (state.user.role === 'staff') return loadStaffOps();
+      if (state.user.role === 'shipper') return loadShipperOps();
+      $('roleOpsContent').innerHTML = '<div class="empty">Customer dashboard dung cac panel catalog, gio hang va checkout phia tren.</div>';
+    }
+
+    async function loadAdminOps() {
+      const [users, orders, payments, shipments] = await Promise.all([
+        api(`/ui/api/admin/users?${actorQuery()}`),
+        api(`/ui/api/admin/orders?${actorQuery()}`),
+        api(`/ui/api/admin/payments?${actorQuery()}`),
+        api(`/ui/api/admin/shipments?${actorQuery()}`),
+      ]);
+      const staffUsers = users.filter((user) => user.role === 'staff');
+      const shipperUsers = users.filter((user) => user.role === 'shipper');
+      $('roleOpsContent').innerHTML = `
+        <div class="form-grid">
+          <div><label>Username</label><input id="newUserName" placeholder="staff2"></div>
+          <div><label>Email</label><input id="newUserEmail" placeholder="staff2@example.com"></div>
+          <div><label>Role</label><select id="newUserRole"><option>customer</option><option>staff</option><option>shipper</option><option>admin</option></select></div>
+          <button class="primary" onclick="createRoleUser()">Tao user</button>
+        </div>
+        <div class="grid">
+          <div>
+            <h3>Users (${users.length})</h3>
+            ${renderUsersTable(users)}
+          </div>
+          <div>
+            <h3>Orders (${orders.length})</h3>
+            ${renderOrdersTable(orders, staffUsers)}
+          </div>
+        </div>
+        <div class="grid">
+          <div>
+            <h3>Payments (${payments.length})</h3>
+            ${renderPaymentsTable(payments)}
+          </div>
+          <div>
+            <h3>Shipments (${shipments.length})</h3>
+            ${renderShipmentsTable(shipments, shipperUsers)}
+          </div>
+        </div>
+      `;
+    }
+
+    function renderUsersTable(users) {
+      if (!users.length) return '<div class="empty">Chua co user.</div>';
+      return `
+        <table class="table">
+          <thead><tr><th>ID</th><th>User</th><th>Role</th><th>Status</th></tr></thead>
+          <tbody>${users.map((user) => `
+            <tr><td>${user.id}</td><td>${user.username}</td><td>${user.role}</td><td>${user.is_active ? 'active' : 'inactive'}</td></tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    }
+
+    function renderOrdersTable(orders, staffUsers = []) {
+      if (!orders.length) return '<div class="empty">Chua co order.</div>';
+      return `
+        <table class="table">
+          <thead><tr><th>ID</th><th>Status</th><th>Staff</th><th>Action</th></tr></thead>
+          <tbody>${orders.map((order) => `
+            <tr>
+              <td>#${order.id}</td>
+              <td>${order.status}</td>
+              <td>
+                <select id="staffForOrder${order.id}">
+                  <option value="">--</option>
+                  ${staffUsers.map((staff) => `<option value="${staff.id}" ${order.assigned_staff_id === staff.id ? 'selected' : ''}>${staff.username}</option>`).join('')}
+                </select>
+              </td>
+              <td class="actions">
+                <button onclick="assignStaff(${order.id})">Gan staff</button>
+                <button onclick="setOrderStatus(${order.id}, 'confirmed')">Confirm</button>
+                <button onclick="setOrderStatus(${order.id}, 'ready_to_ship')">Ready</button>
+              </td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    }
+
+    function renderPaymentsTable(payments) {
+      if (!payments.length) return '<div class="empty">Chua co payment.</div>';
+      return `
+        <table class="table">
+          <thead><tr><th>ID</th><th>Order</th><th>Status</th><th>Amount</th></tr></thead>
+          <tbody>${payments.map((payment) => `
+            <tr><td>#${payment.id}</td><td>#${payment.order_id}</td><td>${payment.status}</td><td>${money(payment.amount)}</td></tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    }
+
+    function renderShipmentsTable(shipments, shipperUsers = []) {
+      if (!shipments.length) return '<div class="empty">Chua co shipment.</div>';
+      return `
+        <table class="table">
+          <thead><tr><th>ID</th><th>Order</th><th>Status</th><th>Shipper</th><th>Action</th></tr></thead>
+          <tbody>${shipments.map((shipment) => `
+            <tr>
+              <td>#${shipment.id}</td>
+              <td>#${shipment.order_id}</td>
+              <td>${shipment.status}</td>
+              <td>
+                <select id="shipperForShipment${shipment.id}">
+                  <option value="">--</option>
+                  ${shipperUsers.map((shipper) => `<option value="${shipper.id}" ${shipment.shipper_id === shipper.id ? 'selected' : ''}>${shipper.username}</option>`).join('')}
+                </select>
+              </td>
+              <td><button onclick="assignShipper(${shipment.id})">Gan shipper</button></td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    }
+
+    async function createRoleUser() {
+      await api(`/ui/api/admin/users?${actorQuery()}`, {
+        method: 'POST',
+        body: JSON.stringify({
+          username: $('newUserName').value,
+          email: $('newUserEmail').value,
+          password: 'password123',
+          role: $('newUserRole').value,
+        }),
+      });
+      log('Da tao user moi.');
+      await loadRoleOps();
+    }
+
+    async function assignStaff(orderId) {
+      const staffId = Number($(`staffForOrder${orderId}`).value);
+      await api(`/ui/api/admin/orders/${orderId}/assign-staff`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: state.user.id, role: state.user.role, staff_id: staffId }),
+      });
+      log(`Da gan staff cho order #${orderId}.`);
+      await loadRoleOps();
+    }
+
+    async function setOrderStatus(orderId, statusValue) {
+      await api(`/ui/api/admin/orders/${orderId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: state.user.id, role: state.user.role, status: statusValue }),
+      });
+      log(`Order #${orderId} -> ${statusValue}.`);
+      await loadRoleOps();
+    }
+
+    async function assignShipper(shipmentId) {
+      const shipperId = Number($(`shipperForShipment${shipmentId}`).value);
+      await api(`/ui/api/admin/shipments/${shipmentId}/assign-shipper`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: state.user.id, role: state.user.role, shipper_id: shipperId }),
+      });
+      log(`Da gan shipper cho shipment #${shipmentId}.`);
+      await loadRoleOps();
+    }
+
+    async function loadStaffOps() {
+      const orders = await api(`/ui/api/staff/orders?${actorQuery()}`);
+      $('roleOpsContent').innerHTML = `
+        <h3>Staff Orders (${orders.length})</h3>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Status</th><th>Total</th><th>Action</th></tr></thead>
+          <tbody>${orders.map((order) => `
+            <tr>
+              <td>#${order.id}</td><td>${order.status}</td><td>${money(order.total_price)}</td>
+              <td class="actions">
+                <button onclick="staffOrderAction(${order.id}, 'confirm')">Confirm</button>
+                <button onclick="staffOrderAction(${order.id}, 'ready-to-ship')">Ready</button>
+              </td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    }
+
+    async function staffOrderAction(orderId, action) {
+      await api(`/ui/api/staff/orders/${orderId}/${action}`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: state.user.id, role: state.user.role }),
+      });
+      log(`Staff action ${action} cho order #${orderId}.`);
+      await loadRoleOps();
+    }
+
+    async function loadShipperOps() {
+      const shipments = await api(`/ui/api/shipper/shipments?${actorQuery()}`);
+      $('roleOpsContent').innerHTML = `
+        <h3>Shipper Shipments (${shipments.length})</h3>
+        <table class="table">
+          <thead><tr><th>ID</th><th>Order</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody>${shipments.map((shipment) => `
+            <tr>
+              <td>#${shipment.id}</td><td>#${shipment.order_id}</td><td>${shipment.status}</td>
+              <td class="actions">
+                <button onclick="shipperStatus(${shipment.id}, 'picked_up')">Picked</button>
+                <button onclick="shipperStatus(${shipment.id}, 'in_transit')">Transit</button>
+                <button onclick="shipperStatus(${shipment.id}, 'delivered')">Delivered</button>
+              </td>
+            </tr>
+          `).join('')}</tbody>
+        </table>
+      `;
+    }
+
+    async function shipperStatus(shipmentId, statusValue) {
+      await api(`/ui/api/shipper/shipments/${shipmentId}/status`, {
+        method: 'PUT',
+        body: JSON.stringify({ user_id: state.user.id, role: state.user.role, status: statusValue }),
+      });
+      log(`Shipment #${shipmentId} -> ${statusValue}.`);
+      await loadRoleOps();
+    }
+
+    async function bootstrap() {
+      try {
+        await Promise.all([loadStatus(), loadProducts()]);
+        await login();
+      } catch (error) {
+        log(error.message);
+      }
+    }
+
+    $('refreshStatusBtn').addEventListener('click', loadStatus);
+    $('loginBtn').addEventListener('click', () => login().catch((error) => alert(error.message)));
+    $('loadAddressesBtn').addEventListener('click', () => loadAddresses().catch((error) => alert(error.message)));
+    $('reloadBtn').addEventListener('click', () => Promise.all([loadProducts(), loadCart(), loadCustomerData()]).catch((error) => alert(error.message)));
+    $('searchBtn').addEventListener('click', () => loadProducts().catch((error) => alert(error.message)));
+    $('searchInput').addEventListener('keydown', (event) => {
+      if (event.key === 'Enter') loadProducts().catch((error) => alert(error.message));
+    });
+    $('clearCartBtn').addEventListener('click', () => clearCart().catch((error) => alert(error.message)));
+    $('previewBtn').addEventListener('click', () => previewCheckout().catch((error) => alert(error.message)));
+    $('createOrderBtn').addEventListener('click', createOrder);
+    $('payBtn').addEventListener('click', () => createPayment().catch((error) => alert(error.message)));
+    $('confirmPayBtn').addEventListener('click', () => confirmPayment().catch((error) => alert(error.message)));
+    $('deliverBtn').addEventListener('click', () => markDelivered().catch((error) => alert(error.message)));
+    $('refreshDataBtn').addEventListener('click', () => loadCustomerData().catch((error) => alert(error.message)));
+
+    bootstrap();
+  </script>
+</body>
+</html>
