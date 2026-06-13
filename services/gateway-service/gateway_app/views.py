@@ -183,6 +183,24 @@ def ui_behaviors_view(request):
         return _proxy('ai', '/ai/behaviors', method='POST', data=data)
     return _proxy('ai', '/ai/behaviors', params=request.GET.dict())
 
+
+@csrf_exempt
+def ui_knowledge_base_view(request):
+    data = _json_body(request)
+    if request.method == 'POST':
+        return _proxy('ai', '/ai/knowledge-base', method='POST', data=data)
+    return _proxy('ai', '/ai/knowledge-base', params=request.GET.dict())
+
+
+@csrf_exempt
+def ui_knowledge_search_view(request):
+    return _proxy('ai', '/ai/knowledge-base/search', params=request.GET.dict())
+
+
+@csrf_exempt
+def ui_rag_context_view(request):
+    return _proxy('ai', '/ai/rag/context', params=request.GET.dict())
+
 def _actor(request):
     data = _json_body(request) or {}
     return (
